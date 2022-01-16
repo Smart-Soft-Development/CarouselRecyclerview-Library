@@ -202,6 +202,18 @@ class CarouselLayoutManager constructor(
           }
       }
         mOffsetAll += travel
+
+        // This is not optimal solution. Can be implement also with SmoothScrollToPosition method.
+        if (dx > 0) {
+            if (dx > 50) {
+                return travel
+            }
+        } else {
+            if (dx < -50) {
+                return travel
+            }
+        }
+
         layoutItems(recycler, state, if (dx > 0) SCROLL_TO_LEFT else SCROLL_TO_RIGHT)
         return travel
     }
