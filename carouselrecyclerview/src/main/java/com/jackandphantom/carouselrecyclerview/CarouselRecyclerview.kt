@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 
 class CarouselRecyclerview(context: Context, attributeSet: AttributeSet) : RecyclerView(context, attributeSet) {
@@ -24,6 +23,7 @@ class CarouselRecyclerview(context: Context, attributeSet: AttributeSet) : Recyc
      * Initialize the layout manager and also enable the childDrawingOrder
      */
     init {
+        carouselLayoutManagerBuilder.attachToRecyclerView(this)
         layoutManager = carouselLayoutManagerBuilder.build()
         isChildrenDrawingOrderEnabled = true
     }

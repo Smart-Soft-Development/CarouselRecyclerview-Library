@@ -9,13 +9,14 @@ import android.util.SparseArray
 import android.util.SparseBooleanArray
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 class CarouselLayoutManager constructor(
-    isLoop: Boolean, isItem3D: Boolean, ratio: Float, flat: Boolean, alpha: Boolean)
+    isLoop: Boolean, isItem3D: Boolean, ratio: Float, flat: Boolean, alpha: Boolean, recyclerView: RecyclerView)
     : RecyclerView.LayoutManager() {
 
     /**
@@ -75,11 +76,18 @@ class CarouselLayoutManager constructor(
     /** Use for restore scrolling in recyclerview at the time of orientation change*/
     private var isOrientationChange = false
 
+    private var scrollToDirection = 0
+
+    private var snapHelper = PagerSnapHelper()
+
+    private var recyclerView: RecyclerView?=null
+
     /** Initialize all the attribute from the constructor and also apply some conditions */
     init {
         this.mInfinite = isLoop
         this.is3DItem = isItem3D
         this.isAlpha = alpha
+        this.recyclerView = recyclerView
         if (ratio in 0f..1f) this.intervalRatio = ratio
         isFlat = flat
         if (isFlat) intervalRatio = 1.1f
@@ -186,6 +194,17 @@ class CarouselLayoutManager constructor(
         recycler: RecyclerView.Recycler?,
         state: RecyclerView.State?
     ): Int {
+        // This is not optimal solution. Can be implement also with SmoothScrollToPosition method.
+        if (dx > 0) {
+            if (dx > 80) {
+                return 0
+            }
+        } else {
+            if (dx < -80) {
+                return 0
+            }
+        }
+
         if (animator != null && animator!!.isRunning) {
             animator?.cancel()
         }
@@ -203,17 +222,7 @@ class CarouselLayoutManager constructor(
       }
         mOffsetAll += travel
 
-        // This is not optimal solution. Can be implement also with SmoothScrollToPosition method.
-        if (dx > 0) {
-            if (dx > 50) {
-                return travel
-            }
-        } else {
-            if (dx < -50) {
-                return travel
-            }
-        }
-
+        scrollToDirection = if (dx > 0) SCROLL_TO_LEFT else SCROLL_TO_RIGHT
         layoutItems(recycler, state, if (dx > 0) SCROLL_TO_LEFT else SCROLL_TO_RIGHT)
         return travel
     }
@@ -344,9 +353,35 @@ class CarouselLayoutManager constructor(
      */
     override fun onScrollStateChanged(state: Int) {
         super.onScrollStateChanged(state)
-        if (state == RecyclerView.SCROLL_STATE_IDLE) {
-            //When scrolling stops
-            fixOffsetWhenFinishOffset()
+        when (state) {
+            RecyclerView.SCROLL_STATE_IDLE -> {
+//                onPageChanged(recyclerView!!)
+            }
+            RecyclerView.SCROLL_STATE_SETTLING -> {
+                //When scrolling stops
+                fixOffsetWhenFinishOffset()
+//                onPageChanged(recyclerView!!)
+            }
+        }
+    }
+
+    private fun onPageChanged(recyclerView: RecyclerView) {
+        val layoutManager = recyclerView.layoutManager
+        val viewToSnap = snapHelper.findSnapView(layoutManager)
+        viewToSnap?.let {
+            val position = layoutManager!!.getPosition(it)
+            // Only "jump over" each second item because it is a space/placeholder
+            // see also MediaContentAdapter.
+            if (position % 2 != 0) {
+                when (scrollToDirection) {
+                    SCROLL_TO_LEFT -> {
+                        recyclerView.smoothScrollToPosition(position - 1)
+                    }
+                    SCROLL_TO_RIGHT -> {
+                        recyclerView.smoothScrollToPosition(position + 1)
+                    }
+                }
+            }
         }
     }
 
@@ -664,6 +699,7 @@ class CarouselLayoutManager constructor(
         private var intervalRation: Float = 0.5f
         private var isFlat = false
         private var isAlpha = false
+        private var recyclerView: RecyclerView?=null
 
         fun setIsInfinite(isInfinite: Boolean) : Builder {
             this.isInfinite = isInfinite
@@ -690,8 +726,12 @@ class CarouselLayoutManager constructor(
             return this
         }
 
+        fun attachToRecyclerView(recyclerView: RecyclerView) {
+            this.recyclerView = recyclerView
+        }
+
         fun build(): CarouselLayoutManager {
-            return CarouselLayoutManager(isInfinite, is3DItem, intervalRation, isFlat, isAlpha)
+            return CarouselLayoutManager(isInfinite, is3DItem, intervalRation, isFlat, isAlpha, recyclerView!!)
         }
     }
 

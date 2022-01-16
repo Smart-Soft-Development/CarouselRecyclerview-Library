@@ -5,6 +5,8 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import com.example.customviewimple.model.DataModel
 import com.jackandphantom.carousellayout.adapter.DataAdapter
+import com.jackandphantom.carousellayout.adapter.SimpleAdapter
+import com.jackandphantom.carouselrecyclerview.SnapHelperOneByOne
 import com.jackandphantom.carouselrecyclerview.CarouselRecyclerview
 
 class MainActivity : AppCompatActivity() {
@@ -26,6 +28,8 @@ class MainActivity : AppCompatActivity() {
         carouselRecyclerview.adapter = adapter
         carouselRecyclerview.set3DItem(true)
         carouselRecyclerview.setAlpha(true)
+        val linearSnapHelper = SnapHelperOneByOne()
+        linearSnapHelper.attachToRecyclerView(carouselRecyclerview)
 
         val carouselLayoutManager = carouselRecyclerview.getCarouselLayoutManager()
         val currentlyCenterPosition = carouselRecyclerview.getSelectedPosition()
