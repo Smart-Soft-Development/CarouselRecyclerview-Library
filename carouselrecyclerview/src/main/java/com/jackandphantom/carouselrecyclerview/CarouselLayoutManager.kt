@@ -16,8 +16,8 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 class CarouselLayoutManager constructor(
-    isLoop: Boolean, isItem3D: Boolean, ratio: Float, flat: Boolean, alpha: Boolean, recyclerView: RecyclerView)
-    : RecyclerView.LayoutManager() {
+    isLoop: Boolean, isItem3D: Boolean, ratio: Float, flat: Boolean, alpha: Boolean, recyclerView: RecyclerView
+) : RecyclerView.LayoutManager() {
 
     /**
      * We are supposing that all the items in recyclerview will have same size
@@ -44,7 +44,7 @@ class CarouselLayoutManager constructor(
     private val mHasAttachedItems = SparseBooleanArray()
 
     /** animator animate the items in layout manager */
-    private var animator:ValueAnimator?= null
+    private var animator: ValueAnimator? = null
 
     /** Store recycler so that we can use it in [scrollToPosition]*/
     private lateinit var recycler: RecyclerView.Recycler
@@ -80,7 +80,7 @@ class CarouselLayoutManager constructor(
 
     private var snapHelper = PagerSnapHelper()
 
-    private var recyclerView: RecyclerView?=null
+    private var recyclerView: RecyclerView? = null
 
     /** Initialize all the attribute from the constructor and also apply some conditions */
     init {
@@ -213,13 +213,13 @@ class CarouselLayoutManager constructor(
 
         var travel = dx
 
-      if (!mInfinite) {
-          if (dx + mOffsetAll < 0) {
-              travel = - mOffsetAll
-          }else if (dx + mOffsetAll > maxOffset()) {
-              travel = (maxOffset() - mOffsetAll)
-          }
-      }
+        if (!mInfinite) {
+            if (dx + mOffsetAll < 0) {
+                travel = -mOffsetAll
+            } else if (dx + mOffsetAll > maxOffset()) {
+                travel = (maxOffset() - mOffsetAll)
+            }
+        }
         mOffsetAll += travel
 
         scrollToDirection = if (dx > 0) SCROLL_TO_LEFT else SCROLL_TO_RIGHT
@@ -253,7 +253,7 @@ class CarouselLayoutManager constructor(
                 //get position from tag class define later
                 val tag = checkTAG(child.tag)
                 tag!!.pos
-            }else {
+            } else {
                 getPosition(child)
             }
 
@@ -263,7 +263,7 @@ class CarouselLayoutManager constructor(
             if (!Rect.intersects(displayFrames, rect)) {
                 removeAndRecycleView(child, recycler)
                 mHasAttachedItems.delete(position)
-            }else {
+            } else {
                 //Shift the item which has still in the screen
                 layoutItem(child, rect)
                 mHasAttachedItems.put(position, true)
@@ -278,32 +278,33 @@ class CarouselLayoutManager constructor(
 
         if (!mInfinite) {
             if (min < 0) min = 0
-            if (max > itemCount ) max = itemCount
+            if (max > itemCount) max = itemCount
         }
 
         for (index in min until max) {
             val rect = getFrame(index)
             //layout items area of a view if it's first inside the display area
             // and also not already on the screen
-           if (Rect.intersects(displayFrames, rect) && !mHasAttachedItems.get(
-                   index
-               )) {
-               var actualPos = index % itemCount
-               if (actualPos < 0) actualPos += itemCount
+            if (Rect.intersects(displayFrames, rect) && !mHasAttachedItems.get(
+                    index
+                )
+            ) {
+                var actualPos = index % itemCount
+                if (actualPos < 0) actualPos += itemCount
 
-               val scrap = recycler.getViewForPosition(actualPos)
-               checkTAG(scrap.tag)
-               scrap.tag = TAG(index)
-               measureChildWithMargins(scrap, 0, 0)
+                val scrap = recycler.getViewForPosition(actualPos)
+                checkTAG(scrap.tag)
+                scrap.tag = TAG(index)
+                measureChildWithMargins(scrap, 0, 0)
 
-               if (scrollToDirection == SCROLL_TO_RIGHT) {
-                   addView(scrap, 0)
-               } else addView(scrap)
+                if (scrollToDirection == SCROLL_TO_RIGHT) {
+                    addView(scrap, 0)
+                } else addView(scrap)
 
-               layoutItem(scrap, rect)
-               mHasAttachedItems.put(index, true)
-           }
-       }
+                layoutItem(scrap, rect)
+                mHasAttachedItems.put(index, true)
+            }
+        }
 
     }
 
@@ -337,12 +338,14 @@ class CarouselLayoutManager constructor(
      * tilt others views based on the drawing order
      */
     private fun itemRotate(child: View, frame: Rect) {
-        val itemCenter = (frame.left + frame.right - 2*mOffsetAll) / 2f
-        var value = (itemCenter - (mStartX + mItemDecoratedWidth / 2f)) * 1f / (itemCount*getIntervalDistance())
-        value = sqrt(abs(value).toDouble()).toFloat()
+
+        val itemCenter = (frame.left + frame.right - 2 * mOffsetAll) / 2f
+        var value = if (itemCount * getIntervalDistance() != 0)
+            (itemCenter - (mStartX + mItemDecoratedWidth / 2f)) * 1f / (itemCount * getIntervalDistance()) else 0.0
+        value = sqrt(abs(value.toDouble())).toFloat()
         val symbol =
             if (itemCenter > mStartX + mItemDecoratedWidth / 2f) (-1).toFloat() else 1.toFloat()
-        child.rotationY = symbol * 50* abs(value)
+        child.rotationY = symbol * 50 * abs(value)
 
     }
 
@@ -415,7 +418,7 @@ class CarouselLayoutManager constructor(
         val direction = if (from < to) SCROLL_TO_LEFT else SCROLL_TO_RIGHT
 
         animator = ValueAnimator.ofFloat(from * 1.0f, to * 1.0f)
-        animator?.duration= 500
+        animator?.duration = 500
         animator?.interpolator = DecelerateInterpolator()
 
         animator?.addUpdateListener { animation ->
@@ -454,7 +457,8 @@ class CarouselLayoutManager constructor(
             return
         }
         mOffsetAll = calculatePositionOffset(position)
-        layoutItems(recycler,
+        layoutItems(
+            recycler,
             state,
             if (position > selectedPosition) SCROLL_TO_LEFT
             else SCROLL_TO_RIGHT
@@ -475,7 +479,7 @@ class CarouselLayoutManager constructor(
         position: Int
     ) {
         //Loop does not support for smooth scrolling
-        if (mInfinite||!this::recycler.isInitialized || !this::state.isInitialized) return
+        if (mInfinite || !this::recycler.isInitialized || !this::state.isInitialized) return
         val finalOffset = calculatePositionOffset(position)
         startScroll(mOffsetAll, finalOffset)
     }
@@ -486,13 +490,15 @@ class CarouselLayoutManager constructor(
      * @return Int center position
      */
     fun centerPosition(): Int {
-        var pos = mOffsetAll / getIntervalDistance()
-        val more = mOffsetAll % getIntervalDistance()
-        if (abs(more) >= getIntervalDistance() * 0.5f) {
-            if (more >= 0) pos++
-            else pos--
-        }
-        return pos
+        return if (getIntervalDistance() != 0) {
+            var pos = mOffsetAll / getIntervalDistance()
+            val more = mOffsetAll % getIntervalDistance()
+            if (abs(more) >= getIntervalDistance() * 0.5f) {
+                if (more >= 0) pos++
+                else pos--
+            }
+            pos
+        } else 0
     }
 
     /**
@@ -504,7 +510,7 @@ class CarouselLayoutManager constructor(
         if (child!!.tag != null) {
             val tag = checkTAG(child.tag)
             if (tag != null)
-            return tag.pos
+                return tag.pos
         }
         return getPosition(child)
     }
@@ -516,10 +522,10 @@ class CarouselLayoutManager constructor(
         return if (tag != null) {
             if (tag is TAG) {
                 tag as TAG
-            }else {
+            } else {
                 throw IllegalArgumentException("You should use the set tag with the position")
             }
-        }else {
+        } else {
             null
         }
 
@@ -585,9 +591,11 @@ class CarouselLayoutManager constructor(
      * calls the interface callback
      */
     private fun onSelectedCallback() {
-        selectedPosition = ((mOffsetAll / getIntervalDistance()).toFloat()).roundToInt()
+        if (getIntervalDistance() != 0)
+            selectedPosition = ((mOffsetAll / getIntervalDistance()).toFloat()).roundToInt()
         if (selectedPosition < 0) selectedPosition += itemCount
-        selectedPosition = abs(selectedPosition % itemCount)
+        if (itemCount != 0)
+            selectedPosition = abs(selectedPosition % itemCount)
         //check if the listener is implemented
         //mLastSelectedPosition keeps track of last position which will prevent simple slide and same position
         if (mSelectedListener != null && selectedPosition != mLastSelectedPosition) {
@@ -618,8 +626,12 @@ class CarouselLayoutManager constructor(
      * @return Float
      */
     private fun computeScale(x: Int): Float {
-        var scale: Float =
-            1 - abs(x - mStartX) * 1.0f / abs(mStartX + mItemDecoratedWidth / intervalRatio)
+        var scale = if (intervalRatio != 0f) {
+            if (abs(mStartX + mItemDecoratedWidth / intervalRatio) != 0f) {
+                1 - abs(x - mStartX) * 1.0f / abs(mStartX + mItemDecoratedWidth / intervalRatio)
+            } else 0f
+        } else 0f
+
 
         if (scale < 0) scale = 0f
         if (scale > 1) scale = 1f
@@ -632,8 +644,11 @@ class CarouselLayoutManager constructor(
      * @return Float
      */
     private fun computeAlpha(x: Int): Float {
-        var alpha: Float =
-            1 - abs(x - mStartX) * 1.0f / abs(mStartX + mItemDecoratedWidth / intervalRatio)
+        var alpha = if (intervalRatio != 0f) {
+            if (abs(mStartX + mItemDecoratedWidth / intervalRatio) != 0f) {
+                1 - abs(x - mStartX) * 1.0f / abs(mStartX + mItemDecoratedWidth / intervalRatio)
+            } else 0f
+        } else 0f
 
         if (alpha < 0.3f) alpha = 0f
         if (alpha > 1) alpha = 1f
@@ -673,7 +688,7 @@ class CarouselLayoutManager constructor(
     /**
      * Calculate the maximum offset
      */
-    private fun maxOffset(): Int{
+    private fun maxOffset(): Int {
         return ((itemCount - 1) * getIntervalDistance())
     }
 
@@ -699,9 +714,9 @@ class CarouselLayoutManager constructor(
         private var intervalRation: Float = 0.5f
         private var isFlat = false
         private var isAlpha = false
-        private var recyclerView: RecyclerView?=null
+        private var recyclerView: RecyclerView? = null
 
-        fun setIsInfinite(isInfinite: Boolean) : Builder {
+        fun setIsInfinite(isInfinite: Boolean): Builder {
             this.isInfinite = isInfinite
             return this
         }
@@ -758,7 +773,7 @@ class CarouselLayoutManager constructor(
         }
     }
 
-    class SaveState constructor(var scrollPosition:Int = 0) : Parcelable {
+    class SaveState constructor(var scrollPosition: Int = 0) : Parcelable {
 
         constructor(parcel: Parcel) : this() {
             scrollPosition = parcel.readInt()
